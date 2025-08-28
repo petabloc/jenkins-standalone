@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+# Note: Not using 'set -e' to allow individual plugin failures
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"

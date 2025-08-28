@@ -77,7 +77,7 @@ jobs:
         
     - name: Upload security report
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-report
         path: security-report-*.md
@@ -153,7 +153,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Download security report
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: security-report
         
@@ -225,7 +225,7 @@ jobs:
         ./scripts/update-versions.sh --dry-run --all-updates --type major
         
     - name: Upload full report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: weekly-full-report
         path: security-report-*.md

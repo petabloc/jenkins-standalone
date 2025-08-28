@@ -32,7 +32,7 @@ jobs:
         ls -la dist/
         
     - name: Upload package as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: jenkins-standalone-package
         path: dist/*.tar.gz

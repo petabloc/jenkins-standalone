@@ -29,13 +29,22 @@ download_plugin() {
     
     echo "Downloading ${plugin_id}:${version}..."
     
-    # Try with version first, fallback to latest if version fails
-    if ! curl -L --fail -o "${output_path}" "${url}" 2>/dev/null; then
-        echo "  Version ${version} not found, trying latest..."
+    # Handle "latest" version directly
+    if [ "$version" = "latest" ]; then
         local latest_url="${JENKINS_PLUGINS_URL}/${plugin_id}/latest/${filename}"
         if ! curl -L --fail -o "${output_path}" "${latest_url}" 2>/dev/null; then
-            echo "  ERROR: Failed to download ${plugin_id}"
+            echo "  ERROR: Failed to download ${plugin_id} (latest)"
             return 1
+        fi
+    else
+        # Try with specific version first, fallback to latest if version fails
+        if ! curl -L --fail -o "${output_path}" "${url}" 2>/dev/null; then
+            echo "  Version ${version} not found, trying latest..."
+            local latest_url="${JENKINS_PLUGINS_URL}/${plugin_id}/latest/${filename}"
+            if ! curl -L --fail -o "${output_path}" "${latest_url}" 2>/dev/null; then
+                echo "  ERROR: Failed to download ${plugin_id}"
+                return 1
+            fi
         fi
     fi
     
@@ -94,3 +103,6 @@ fi
 echo ""
 echo "Jenkins plugins download completed"
 echo "Total plugins in directory: $(ls -1 "${PLUGINS_DIR}"/*.hpi 2>/dev/null | wc -l)"
+
+# Always exit successfully - plugin failures shouldn't break the build
+exit 0

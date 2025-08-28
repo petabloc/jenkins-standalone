@@ -1,0 +1,232 @@
+name: Version Monitoring and Security Updates
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of updates to check'
+        required: false
+        default: 'security'
+        type: choice
+        options:
+          - security
+          - minor
+          - major
+      auto_apply:
+        description: 'Auto-apply security updates'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      updates-available: ${{ steps.check.outputs.updates-available }}
+      security-critical: ${{ steps.check.outputs.security-critical }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl jq
+        
+        # Install yq
+        wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+        chmod +x /usr/local/bin/yq
+        
+    - name: Check for updates
+      id: check
+      run: |
+        chmod +x scripts/update-versions.sh
+        
+        # Run update check
+        if [ "${{ github.event.inputs.update_type }}" != "" ]; then
+          UPDATE_TYPE="${{ github.event.inputs.update_type }}"
+        else
+          UPDATE_TYPE="security"
+        fi
+        
+        echo "Checking for $UPDATE_TYPE updates..."
+        
+        if [ "$UPDATE_TYPE" = "security" ]; then
+          ./scripts/update-versions.sh --dry-run --security-only
+        else
+          ./scripts/update-versions.sh --dry-run --all-updates --type "$UPDATE_TYPE"
+        fi
+        
+        # Check if updates were found
+        if [ -f security-report-*.md ]; then
+          if grep -q "Updates available" security-report-*.md; then
+            echo "updates-available=true" >> $GITHUB_OUTPUT
+            
+            # Check for critical security updates
+            if grep -qi "security\|cve\|critical" security-report-*.md; then
+              echo "security-critical=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "updates-available=false" >> $GITHUB_OUTPUT
+          fi
+        fi
+        
+    - name: Upload security report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report
+        path: security-report-*.md
+        retention-days: 30
+
+  apply-security-updates:
+    needs: check-versions
+    if: needs.check-versions.outputs.updates-available == 'true' && (github.event.inputs.auto_apply == 'true' || needs.check-versions.outputs.security-critical == 'true')
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl jq
+        wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+        chmod +x /usr/local/bin/yq
+        
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+    - name: Apply security updates
+      run: |
+        chmod +x scripts/update-versions.sh
+        ./scripts/update-versions.sh --auto-approve --security-only
+        
+    - name: Test build with new versions
+      run: |
+        chmod +x build.sh
+        ./build.sh
+        
+    - name: Create Pull Request
+      if: success()
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "security: update component versions for security fixes"
+        title: "Security Updates - Automated Version Updates"
+        body: |
+          ## Automated Security Updates
+          
+          This PR contains automated security updates for Jenkins Standalone components.
+          
+          ### Changes Made
+          - Updated versions.yml with latest security patches
+          - Verified build completes successfully
+          
+          ### Security Report
+          See the security report artifact for detailed information about the updates applied.
+          
+          ### Testing
+          - [x] Build verification completed
+          - [ ] Manual testing recommended before merge
+          
+          This PR was automatically created by the version monitoring workflow.
+        branch: security-updates-${{ github.run_number }}
+        delete-branch: true
+
+  notify-updates:
+    needs: check-versions
+    if: needs.check-versions.outputs.updates-available == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download security report
+      uses: actions/download-artifact@v3
+      with:
+        name: security-report
+        
+    - name: Create Issue for Updates
+      if: needs.check-versions.outputs.security-critical != 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          // Read security report
+          const reportFiles = fs.readdirSync('.').filter(f => f.startsWith('security-report-'));
+          let reportContent = 'No report found';
+          
+          if (reportFiles.length > 0) {
+            reportContent = fs.readFileSync(reportFiles[0], 'utf8');
+          }
+          
+          const isCritical = ${{ needs.check-versions.outputs.security-critical == 'true' }};
+          const title = isCritical ? 
+            '🚨 CRITICAL: Security Updates Available' : 
+            '📋 Updates Available for Jenkins Standalone';
+          
+          const body = `## Version Update Report
+          
+          Updates are available for Jenkins Standalone components.
+          
+          ${reportContent}
+          
+          ### Next Steps
+          ${isCritical ? 
+            '- **URGENT**: These updates contain security fixes and should be applied immediately' :
+            '- Review the available updates and consider applying them'
+          }
+          - Run \`./scripts/update-versions.sh --dry-run\` locally to see what would be updated
+          - Apply updates with \`./scripts/update-versions.sh --auto-approve\` or manually edit versions.yml
+          - Test the build after applying updates
+          
+          ### Automation
+          This issue was automatically created by the version monitoring workflow.
+          `;
+          
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: isCritical ? ['security', 'urgent'] : ['maintenance', 'updates']
+          });
+
+  weekly-full-scan:
+    if: github.event.schedule == '0 2 * * 0'  # Sunday at 2 AM UTC
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl jq
+        wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+        chmod +x /usr/local/bin/yq
+        
+    - name: Full version scan
+      run: |
+        chmod +x scripts/update-versions.sh
+        ./scripts/update-versions.sh --dry-run --all-updates --type major
+        
+    - name: Upload full report
+      uses: actions/upload-artifact@v3
+      with:
+        name: weekly-full-report
+        path: security-report-*.md
+        retention-days: 90

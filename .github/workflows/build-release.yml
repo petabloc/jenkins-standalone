@@ -1,0 +1,48 @@
+name: Build Jenkins Standalone Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup build environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl tar gzip
+        
+    - name: Create dist directory
+      run: mkdir -p dist
+      
+    - name: Build package
+      run: |
+        chmod +x build.sh
+        ./build.sh
+        
+    - name: List package contents
+      run: |
+        ls -la dist/
+        
+    - name: Upload package as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: jenkins-standalone-package
+        path: dist/*.tar.gz
+        retention-days: 90
+        
+    - name: Create Release (on tag)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/*.tar.gz
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

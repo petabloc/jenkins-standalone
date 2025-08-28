@@ -1,0 +1,43 @@
+# Binaries and downloaded files
+lib/
+tmp/
+dist/
+test/
+plugins/
+
+# Jenkins runtime files
+jenkins.pid
+logs/*.log
+
+# Jenkins home data
+jenkins_home/jobs/*/builds/
+jenkins_home/workspace/
+jenkins_home/logs/
+jenkins_home/updates/
+jenkins_home/*.log
+jenkins_home/*.xml.bak
+jenkins_home/war/
+jenkins_home/plugins/*.hpi
+jenkins_home/plugins/*.jpi
+jenkins_home/plugins/*.jpi.pinned
+jenkins_home/plugins/*.hpi.pinned
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.backup

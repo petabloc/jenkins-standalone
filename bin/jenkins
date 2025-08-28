@@ -1,0 +1,123 @@
+#!/bin/bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+export JAVA_HOME="${PROJECT_DIR}/lib/jdk"
+export PATH="${JAVA_HOME}/bin:${PATH}"
+export JENKINS_HOME="${PROJECT_DIR}/jenkins_home"
+
+JENKINS_WAR="${PROJECT_DIR}/lib/jenkins.war"
+JENKINS_LOG="${PROJECT_DIR}/logs/jenkins.log"
+JENKINS_PID="${PROJECT_DIR}/jenkins.pid"
+
+case "$1" in
+    start)
+        if [ -f "$JENKINS_PID" ]; then
+            PID=$(cat "$JENKINS_PID")
+            if kill -0 "$PID" 2>/dev/null; then
+                echo "Jenkins is already running (PID: $PID)"
+                exit 1
+            else
+                echo "Removing stale PID file"
+                rm -f "$JENKINS_PID"
+            fi
+        fi
+        
+        echo "Starting Jenkins..."
+        echo "Jenkins Home: $JENKINS_HOME"
+        echo "Java Home: $JAVA_HOME"
+        echo "Log file: $JENKINS_LOG"
+        
+        # Ensure log directory exists
+        mkdir -p "$(dirname "$JENKINS_LOG")"
+        
+        # Start Jenkins in background
+        nohup java -jar "$JENKINS_WAR" \
+            --httpPort=8080 \
+            > "$JENKINS_LOG" 2>&1 &
+        
+        JENKINS_PID_VALUE=$!
+        echo $JENKINS_PID_VALUE > "$JENKINS_PID"
+        
+        echo "Jenkins started with PID: $JENKINS_PID_VALUE"
+        echo "Web interface will be available at: http://localhost:8080"
+        echo "Log file: $JENKINS_LOG"
+        ;;
+        
+    stop)
+        if [ ! -f "$JENKINS_PID" ]; then
+            echo "Jenkins PID file not found. Jenkins may not be running."
+            exit 1
+        fi
+        
+        PID=$(cat "$JENKINS_PID")
+        echo "Stopping Jenkins (PID: $PID)..."
+        
+        if kill -0 "$PID" 2>/dev/null; then
+            kill "$PID"
+            echo "Waiting for Jenkins to stop..."
+            
+            # Wait up to 30 seconds for graceful shutdown
+            COUNTER=0
+            while kill -0 "$PID" 2>/dev/null && [ $COUNTER -lt 30 ]; do
+                sleep 1
+                COUNTER=$((COUNTER + 1))
+            done
+            
+            # Force kill if still running
+            if kill -0 "$PID" 2>/dev/null; then
+                echo "Force killing Jenkins..."
+                kill -9 "$PID"
+            fi
+            
+            rm -f "$JENKINS_PID"
+            echo "Jenkins stopped"
+        else
+            echo "Jenkins process not found"
+            rm -f "$JENKINS_PID"
+        fi
+        ;;
+        
+    status)
+        if [ -f "$JENKINS_PID" ]; then
+            PID=$(cat "$JENKINS_PID")
+            if kill -0 "$PID" 2>/dev/null; then
+                echo "Jenkins is running (PID: $PID)"
+                echo "Web interface: http://localhost:8080"
+            else
+                echo "Jenkins is not running (stale PID file found)"
+                rm -f "$JENKINS_PID"
+            fi
+        else
+            echo "Jenkins is not running"
+        fi
+        ;;
+        
+    restart)
+        "$0" stop
+        sleep 2
+        "$0" start
+        ;;
+        
+    logs)
+        if [ -f "$JENKINS_LOG" ]; then
+            tail -f "$JENKINS_LOG"
+        else
+            echo "Log file not found: $JENKINS_LOG"
+            exit 1
+        fi
+        ;;
+        
+    *)
+        echo "Usage: $0 {start|stop|restart|status|logs}"
+        echo ""
+        echo "Commands:"
+        echo "  start   - Start Jenkins server"
+        echo "  stop    - Stop Jenkins server" 
+        echo "  restart - Restart Jenkins server"
+        echo "  status  - Show Jenkins status"
+        echo "  logs    - Tail Jenkins logs"
+        exit 1
+        ;;
+esac

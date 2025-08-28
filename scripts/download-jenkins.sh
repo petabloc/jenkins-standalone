@@ -17,6 +17,9 @@ JENKINS_WAR="jenkins.war"
 echo "Downloading Jenkins ${JENKINS_VERSION}..."
 echo "URL: ${JENKINS_URL}"
 
+# Ensure lib directory exists
+mkdir -p "${PROJECT_DIR}/lib"
+
 # Download with verbose output and error checking
 if curl -L -f -o "${PROJECT_DIR}/lib/${JENKINS_WAR}" "${JENKINS_URL}"; then
     # Verify the download

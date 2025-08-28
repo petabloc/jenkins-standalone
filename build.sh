@@ -6,8 +6,8 @@ cd "$SCRIPT_DIR"
 
 echo "Building Jenkins Standalone Package..."
 
-# Create temporary directory for downloads
-mkdir -p tmp
+# Create necessary directories
+mkdir -p tmp lib plugins logs jenkins_home/plugins
 
 # Download all components
 echo "Downloading Java JDK..."

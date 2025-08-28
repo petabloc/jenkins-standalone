@@ -23,13 +23,9 @@ JDK_DIR="jdk-${JDK_VERSION}"
 echo "Downloading OpenJDK ${JDK_VERSION}..."
 echo "URL: ${JDK_URL}"
 
-# Create tmp directory if it doesn't exist
-mkdir -p "${PROJECT_DIR}/tmp"
-
 # Download with error checking
 if curl -L -f -o "${PROJECT_DIR}/tmp/${JDK_TAR}" "${JDK_URL}"; then
     echo "Extracting OpenJDK to lib directory..."
-    mkdir -p "${PROJECT_DIR}/lib"
     cd "${PROJECT_DIR}/lib"
     tar -xzf "${PROJECT_DIR}/tmp/${JDK_TAR}"
     mv "${JDK_DIR}" "jdk"

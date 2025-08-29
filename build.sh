@@ -40,6 +40,7 @@ mkdir -p "${PACKAGE_DIR}"
 
 # Copy all necessary files and directories
 cp -r bin "${PACKAGE_DIR}/"
+cp -r conf "${PACKAGE_DIR}/"
 cp -r lib "${PACKAGE_DIR}/"
 cp -r jenkins_home "${PACKAGE_DIR}/"
 cp -r logs "${PACKAGE_DIR}/"

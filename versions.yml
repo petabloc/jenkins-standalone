@@ -50,11 +50,6 @@ plugins:
     security_status: "clean"
     last_security_update: "2023-09-15"
     
-  ldap:
-    version: "682.v7b_544c9d1512"
-    security_status: "clean"
-    last_security_update: "2023-12-01"
-    
   mailer:
     version: "448.v5b_97805e3767"
     security_status: "clean"
@@ -177,11 +172,6 @@ plugins:
     security_status: "clean"
     last_security_update: "2023-11-20"
 
-  # Kubernetes plugins
-  kubernetes:
-    version: "4020.v81dd999bd6dd"
-    security_status: "clean"
-    last_security_update: "2023-11-12"
 
 # Security vulnerability tracking
 security:

@@ -47,7 +47,6 @@ json-api:latest
 json-path-api:latest
 jsoup:latest
 junit:latest
-kubernetes:latest
 ldap:latest
 mailer:latest
 matrix-auth:latest
@@ -59,11 +58,13 @@ okhttp-api:latest
 pam-auth:latest
 pipeline-build-step:latest
 pipeline-github-lib:latest
+pipeline-graph-analysis:latest
 pipeline-graph-view:latest
 pipeline-groovy-lib:latest
 pipeline-input-step:latest
 pipeline-milestone-step:latest
 pipeline-model-api:latest
+pipeline-rest-api:latest
 pipeline-model-definition:latest
 pipeline-model-extensions:latest
 pipeline-stage-step:latest

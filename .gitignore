@@ -9,26 +9,8 @@ plugins/
 jenkins.pid
 logs/*.log
 
-# Jenkins runtime data - everything except basic plugins and init scripts
-jenkins_home/jobs/
-jenkins_home/workspace/
-jenkins_home/logs/
-jenkins_home/updates/
-jenkins_home/war/
-jenkins_home/users/
-jenkins_home/userContent/
-jenkins_home/secrets/
-jenkins_home/nodeMonitors.xml
-jenkins_home/queue.xml*
-jenkins_home/config.xml
-jenkins_home/identity.key*
-jenkins_home/secret.key*
-jenkins_home/.lastStarted
-jenkins_home/.owner
-jenkins_home/jenkins.*.xml
-jenkins_home/hudson.*.xml
-jenkins_home/*.log
-jenkins_home/*.xml.bak
+# Jenkins runtime data - entire jenkins_home created at runtime
+jenkins_home/
 
 # OS generated files
 .DS_Store

@@ -61,7 +61,17 @@ check_jenkins_updates() {
     # Fetch latest LTS version
     local latest_lts
     if command -v curl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
-        latest_lts=$(curl -s "https://www.jenkins.io/api/lts/" | jq -r '.version')
+        local jenkins_api_response
+        jenkins_api_response=$(curl -s "https://www.jenkins.io/api/lts/")
+        
+        # Check if we got valid JSON with a version field
+        if echo "$jenkins_api_response" | jq -e '.version' >/dev/null 2>&1; then
+            latest_lts=$(echo "$jenkins_api_response" | jq -r '.version')
+        else
+            warn "Unable to fetch Jenkins version from API"
+            log "Jenkins version check skipped: $current_version"
+            return 1
+        fi
     else
         warn "curl or jq not available, cannot check Jenkins updates automatically"
         return 1
@@ -96,10 +106,19 @@ check_jdk_updates() {
     if command -v curl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
         # Check GitHub releases for OpenJDK (this is a simplified check)
         local latest_patch
-        latest_patch=$(curl -s "https://api.github.com/repos/openjdk/jdk${major_minor}u/releases" | \
-                      jq -r '.[0].tag_name' | sed 's/jdk-//' | sed 's/+.*//')
+        local releases_json
+        releases_json=$(curl -s "https://api.github.com/repos/openjdk/jdk${major_minor}u/releases")
         
-        if [ "$current_version" != "$latest_patch" ] && [ -n "$latest_patch" ]; then
+        # Check if we got a valid JSON array with at least one release
+        if echo "$releases_json" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
+            latest_patch=$(echo "$releases_json" | jq -r '.[0].tag_name' | sed 's/jdk-//' | sed 's/+.*//')
+        else
+            warn "Unable to fetch JDK releases from GitHub API"
+            log "JDK version check skipped: $current_version"
+            return 1
+        fi
+        
+        if [ "$current_version" != "$latest_patch" ] && [ -n "$latest_patch" ] && [ "$latest_patch" != "null" ]; then
             warn "JDK update available: $current_version -> $latest_patch"
             echo "jdk_update_available=true" >> /tmp/update-status
             echo "jdk_current=$current_version" >> /tmp/update-status
@@ -195,23 +214,50 @@ apply_updates() {
             jenkins_update_available)
                 if [ "$value" = "true" ] && [ "$AUTO_APPROVE" = "true" ]; then
                     log "Updating Jenkins version..."
-                    # Update Jenkins version in versions.yml
-                    ((updates_applied++))
+                    local jenkins_latest
+                    jenkins_latest=$(grep "jenkins_latest=" /tmp/update-status | cut -d'=' -f2)
+                    if [ -n "$jenkins_latest" ]; then
+                        if command -v yq >/dev/null 2>&1; then
+                            yq eval ".jenkins.version = \"$jenkins_latest\"" -i "$VERSIONS_FILE"
+                        else
+                            sed -i "s/version: \"[^\"]*\"/version: \"$jenkins_latest\"/" "$VERSIONS_FILE"
+                        fi
+                        success "Updated Jenkins to version $jenkins_latest"
+                        ((updates_applied++))
+                    fi
                 fi
                 ;;
             jdk_update_available)
                 if [ "$value" = "true" ] && [ "$AUTO_APPROVE" = "true" ]; then
                     log "Updating JDK version..."
-                    # Update JDK version in versions.yml
-                    ((updates_applied++))
+                    local jdk_latest
+                    jdk_latest=$(grep "jdk_latest=" /tmp/update-status | cut -d'=' -f2)
+                    if [ -n "$jdk_latest" ]; then
+                        if command -v yq >/dev/null 2>&1; then
+                            yq eval ".jdk.version = \"$jdk_latest\"" -i "$VERSIONS_FILE"
+                        else
+                            sed -i "/^jdk:/,/^[a-zA-Z]/ s/version: \"[^\"]*\"/version: \"$jdk_latest\"/" "$VERSIONS_FILE"
+                        fi
+                        success "Updated JDK to version $jdk_latest"
+                        ((updates_applied++))
+                    fi
                 fi
                 ;;
             plugin_*_update)
                 if [ "$value" = "true" ] && [ "$AUTO_APPROVE" = "true" ]; then
                     local plugin_name=$(echo "$key" | sed 's/plugin_//;s/_update//')
                     log "Updating plugin: $plugin_name"
-                    # Update plugin version in versions.yml
-                    ((updates_applied++))
+                    local plugin_latest
+                    plugin_latest=$(grep "plugin_${plugin_name}_latest=" /tmp/update-status | cut -d'=' -f2)
+                    if [ -n "$plugin_latest" ]; then
+                        if command -v yq >/dev/null 2>&1; then
+                            yq eval ".plugins.${plugin_name}.version = \"$plugin_latest\"" -i "$VERSIONS_FILE"
+                        else
+                            sed -i "/^\s*${plugin_name}:/,/^\s*[a-zA-Z]/ s/version: \"[^\"]*\"/version: \"$plugin_latest\"/" "$VERSIONS_FILE"
+                        fi
+                        success "Updated plugin $plugin_name to version $plugin_latest"
+                        ((updates_applied++))
+                    fi
                 fi
                 ;;
         esac

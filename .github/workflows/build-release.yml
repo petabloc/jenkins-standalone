@@ -31,12 +31,13 @@ jobs:
       run: |
         ls -la dist/
         
-    - name: Upload package as artifact
+    - name: Upload package as artifact (non-release builds)
+      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
       uses: actions/upload-artifact@v4
       with:
         name: jenkins-standalone-package
         path: dist/*.tar.gz
-        retention-days: 90
+        retention-days: 30
         
     - name: Create Release (on tag)
       if: startsWith(github.ref, 'refs/tags/')

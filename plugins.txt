@@ -1,41 +1,101 @@
 # Jenkins Plugin Configuration
-# Core plugins with reliable versions
-#
-# Uncomment plugins you want to include
+# Complete set of plugins auto-installed by Jenkins
 # Format: plugin-id:version
 
-# Essential core plugins
+# Core essential plugins
 ant:latest
+antisamy-markup-formatter:latest
+apache-httpcomponents-client-4-api:latest
+asm-api:latest
+bootstrap5-api:latest
+bouncycastle-api:latest
+branch-api:latest
 build-timeout:latest
+caffeine-api:latest
+checks-api:latest
+cloudbees-folder:latest
+commons-lang3-api:latest
+commons-text-api:latest
+credentials:latest
 credentials-binding:latest
+dark-theme:latest
+display-url-api:latest
+durable-task:latest
+echarts-api:latest
+eddsa-api:latest
+email-ext:latest
+font-awesome-api:latest
 git:latest
+git-client:latest
+github:latest
+github-api:latest
+github-branch-source:latest
+gradle:latest
+gson-api:latest
+instance-identity:latest
+ionicons-api:latest
+jackson2-api:latest
+jakarta-activation-api:latest
+jakarta-mail-api:latest
+javax-activation-api:latest
+javax-mail-api:latest
+jaxb:latest
+jjwt-api:latest
+joda-time-api:latest
+jquery3-api:latest
+json-api:latest
+json-path-api:latest
+jsoup:latest
+junit:latest
 mailer:latest
 matrix-auth:latest
+matrix-project:latest
+metrics:latest
+mina-sshd-api-common:latest
+mina-sshd-api-core:latest
+okhttp-api:latest
+pam-auth:latest
+pipeline-build-step:latest
+pipeline-github-lib:latest
+pipeline-graph-analysis:latest
+pipeline-graph-view:latest
+pipeline-groovy-lib:latest
+pipeline-input-step:latest
+pipeline-milestone-step:latest
+pipeline-model-api:latest
+pipeline-rest-api:latest
+pipeline-model-definition:latest
+pipeline-model-extensions:latest
+pipeline-stage-step:latest
+pipeline-stage-tags-metadata:latest
+pipeline-stage-view:latest
+plain-credentials:latest
+plugin-util-api:latest
+resource-disposer:latest
+scm-api:latest
+script-security:latest
+snakeyaml-api:latest
+ssh-credentials:latest
+ssh-slaves:latest
+sshd:latest
+structs:latest
+theme-manager:latest
 timestamper:latest
+token-macro:latest
+trilead-api:latest
+variant:latest
 workflow-aggregator:latest
+workflow-api:latest
+workflow-basic-steps:latest
+workflow-cps:latest
+workflow-durable-task-step:latest
+workflow-job:latest
+workflow-multibranch:latest
+workflow-scm-step:latest
+workflow-step-api:latest
+workflow-support:latest
 
-# Pipeline plugins  
-# pipeline-build-step:latest
-# pipeline-stage-view:latest
-# workflow-basic-steps:latest
-
-# SCM plugins
-# github:latest
-# subversion:latest
-
-# Build tools
-# maven-plugin:latest
-# gradle:latest
-
-# Security
-# role-strategy:latest
-
-# Kubernetes (uncomment if needed)
-# kubernetes:latest
-
-# Docker (uncomment if needed)  
-# docker-plugin:latest
-
-# Notifications
-# email-ext:latest
+# Additional plugins (uncomment if needed)
 # slack:latest
+# docker-plugin:latest
+# maven-plugin:latest

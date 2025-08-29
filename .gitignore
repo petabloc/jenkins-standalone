@@ -9,7 +9,7 @@ plugins/
 jenkins.pid
 logs/*.log
 
-# Jenkins home data
+# Jenkins home runtime data
 jenkins_home/jobs/*/builds/
 jenkins_home/workspace/
 jenkins_home/logs/
@@ -21,6 +21,19 @@ jenkins_home/plugins/*.hpi
 jenkins_home/plugins/*.jpi
 jenkins_home/plugins/*.jpi.pinned
 jenkins_home/plugins/*.hpi.pinned
+
+# Jenkins runtime state files
+jenkins_home/.lastStarted
+jenkins_home/hudson.model.UpdateCenter.xml
+jenkins_home/hudson.plugins.git.GitTool.xml
+jenkins_home/identity.key.enc
+jenkins_home/jenkins.telemetry.Correlator.xml
+jenkins_home/nodeMonitors.xml
+jenkins_home/queue.xml
+jenkins_home/secret.key*
+jenkins_home/secrets/
+jenkins_home/userContent/
+jenkins_home/users/
 
 # OS generated files
 .DS_Store

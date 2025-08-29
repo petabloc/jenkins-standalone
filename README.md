@@ -1,14 +1,6 @@
 # Jenkins Standalone
 
-Self-contained Jenkins installation with all dependencies included. Runs as non-root user in secure environments.
-
-## Features
-
-- **Self-contained**: Includes OpenJDK 21, Jenkins 2.516.1 LTS, and configurable plugins
-- **Non-root execution**: Runs without elevated privileges
-- **Portable**: All files contained within installation directory
-- **Air-gapped ready**: No runtime internet dependencies
-- **Version managed**: Automated security updates and vulnerability scanning
+Self-contained Jenkins installation with OpenJDK 21, Jenkins 2.516.1 LTS, and 91 plugins. Runs as daemon without root privileges.
 
 ## Quick Start
 
@@ -20,7 +12,18 @@ cd jenkins-standalone-*
 ./bin/jenkins start
 ```
 
+### From Development Artifact
+
+```bash
+unzip jenkins-standalone-package.zip
+tar -xzf jenkins-standalone-*.tar.gz
+cd jenkins-standalone-*
+./bin/jenkins start
+```
+
 Jenkins available at http://localhost:8080
+
+**First-time setup:** Use initial admin password from `jenkins_home/secrets/initialAdminPassword`
 
 ### From Source
 
@@ -33,11 +36,12 @@ cd jenkins-standalone
 ## Commands
 
 ```bash
-./bin/jenkins start    # Start Jenkins
-./bin/jenkins stop     # Stop Jenkins  
+./bin/jenkins start    # Start Jenkins daemon (survives SSH disconnect)
+./bin/jenkins stop     # Stop Jenkins daemon
 ./bin/jenkins restart  # Restart Jenkins
-./bin/jenkins status   # Show status
-./bin/jenkins logs     # Show logs
+./bin/jenkins status   # Show daemon status
+./bin/jenkins logs     # Tail logs (Ctrl+C to exit)
+./bin/jenkins config   # Show configuration
 ```
 
 ## Directory Structure
@@ -45,8 +49,10 @@ cd jenkins-standalone
 ```
 jenkins-standalone/
 ├── bin/jenkins          # Control script
-├── lib/                 # OpenJDK and Jenkins WAR
-├── jenkins_home/        # Jenkins data and config
+├── conf/               # Configuration files
+│   └── jenkins.conf    # Main configuration file
+├── lib/                # OpenJDK and Jenkins WAR
+├── jenkins_home/       # Jenkins data and config
 ├── logs/               # Application logs
 ├── scripts/            # Management scripts
 ├── plugins.txt         # Plugin configuration
@@ -55,98 +61,73 @@ jenkins-standalone/
 
 ## Configuration
 
-### Default Settings
-- **Port**: 8080
-- **Jenkins Home**: `./jenkins_home`
-- **Security**: Disabled (enable for production)
-
-### Plugins
-
-Edit `plugins.txt` to configure plugins:
-```
-git:5.0.0
-workflow-aggregator:590.v6a_d052e5a_a_b_5
-# maven-plugin:3.21
-```
-
-Rebuild or use `./scripts/install-plugins.sh` to apply changes.
-
-## Version Management
-
-All versions defined in `versions.yml`:
-
-```yaml
-jenkins:
-  version: "2.516.1"
-jdk:
-  version: "21.0.1"
-plugins:
-  git:
-    version: "5.0.0"
-```
-
-### Security Updates
+Edit `conf/jenkins.conf` to customize settings:
 
 ```bash
-# Check for updates
-./scripts/update-versions.sh --dry-run --security-only
-
-# Scan for vulnerabilities
-./scripts/security-scan.sh
-
-# Apply security updates
-./scripts/update-versions.sh --auto-approve --security-only
+HTTP_PORT=8080                    # Web interface port
+JVM_XMS=512m                      # Initial heap size
+JVM_XMX=2g                        # Maximum heap size
+JVM_OPTS="-server -Djava.awt.headless=true"
+JENKINS_OPTS="--sessionTimeout=0"
+BIND_ADDRESS=0.0.0.0              # 0.0.0.0=all interfaces, 127.0.0.1=localhost only
+DEVELOPMENT_MODE=false
+LOG_LEVEL=INFO
+JENKINS_HOME_OVERRIDE=""          # Custom Jenkins home (optional)
 ```
 
-## Automation
+## Plugins
 
-GitHub Actions provide:
-- Daily security monitoring
-- Automated vulnerability alerts
-- Auto-PR for critical security updates
-- Weekly comprehensive reports
+Edit `plugins.txt` to configure plugins, then rebuild:
+```
+git:latest
+workflow-aggregator:latest
+# maven-plugin:latest
+```
 
-## System Requirements
+## Security Updates
 
-- Linux x86_64
-- 2GB RAM minimum
-- 1GB disk space
+```bash
+./scripts/update-versions.sh --dry-run --security-only  # Check updates
+./scripts/security-scan.sh                               # Scan vulnerabilities  
+./scripts/update-versions.sh --auto-approve --security-only  # Apply updates
+```
+
+GitHub Actions: Daily security monitoring, vulnerability alerts, auto-PRs for critical updates.
+
+## Requirements
+
+- Linux x86_64, 2GB RAM, 1GB disk
 - Network access during build only
-
-## Security
-
-Default installation has security disabled for development use.
-
-For production:
-1. Enable security in `jenkins_home/config.xml`
-2. Configure authentication and authorization
-3. Use HTTPS reverse proxy
-4. Apply regular security updates
-
-Air-gapped environments use pre-built packages with all security updates included.
 
 ## Troubleshooting
 
-**Jenkins won't start:**
 ```bash
+# Jenkins won't start
 ./lib/jdk/bin/java -version  # Check Java
 cat logs/jenkins.log          # Check logs
-```
 
-**Port conflict:**
-Edit `bin/jenkins` to change `--httpPort=8080`
+# Port conflict  
+# Edit conf/jenkins.conf to change HTTP_PORT
 
-**Permissions:**
-```bash
+# Permissions
 chmod -R u+rw jenkins-standalone/
 ```
 
+## Admin Setup
+
+On first launch, Jenkins displays setup wizard requiring initial admin password:
+
+1. Access http://localhost:8080
+2. Enter password from `jenkins_home/secrets/initialAdminPassword`  
+3. Create admin user account
+4. Skip additional plugin installation (91 plugins pre-installed)
+
 ## Components
 
-- **OpenJDK 21.0.1**: Java runtime
-- **Jenkins 2.516.1 LTS**: Automation server  
-- **Management Scripts**: Version control, security scanning, plugin management
+- OpenJDK 21.0.1, Jenkins 2.516.1 LTS, 91 plugins
+- Version management and security scanning scripts  
+- Setup wizard creates admin user on first launch
 
 ## License
 
-MIT License. Individual components retain respective licenses.
+MIT License

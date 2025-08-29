@@ -7,7 +7,7 @@ cd "$SCRIPT_DIR"
 echo "Building Jenkins Standalone Package..."
 
 # Create necessary directories
-mkdir -p tmp lib plugins logs
+mkdir -p tmp lib plugins logs jenkins_home/plugins
 
 # Download all components
 echo "Downloading Java JDK..."
@@ -19,9 +19,14 @@ echo "Downloading Jenkins WAR..."
 echo "Downloading Jenkins plugins..."
 ./scripts/download-plugins.sh
 
-# Note: Plugins will be installed during Jenkins setup wizard
-echo "Plugins downloaded and ready for installation during setup wizard"
-echo "Available plugins: $(ls plugins/*.hpi 2>/dev/null | wc -l || echo 0)"
+# Copy plugins to Jenkins home
+echo "Installing plugins..."
+if ls plugins/*.hpi 1> /dev/null 2>&1; then
+    cp plugins/*.hpi jenkins_home/plugins/
+    echo "Installed $(ls plugins/*.hpi | wc -l) plugins"
+else
+    echo "No plugins found to install"
+fi
 
 # Create the distribution package
 PACKAGE_NAME="jenkins-standalone-$(date +%Y%m%d-%H%M%S)"
@@ -37,6 +42,7 @@ mkdir -p "${PACKAGE_DIR}"
 cp -r bin "${PACKAGE_DIR}/"
 cp -r conf "${PACKAGE_DIR}/"
 cp -r lib "${PACKAGE_DIR}/"
+cp -r jenkins_home "${PACKAGE_DIR}/"
 mkdir -p "${PACKAGE_DIR}/logs"
 cp README.md "${PACKAGE_DIR}/"
 cp SECURITY.md "${PACKAGE_DIR}/"

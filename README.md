@@ -120,7 +120,7 @@ On first launch, Jenkins displays setup wizard requiring initial admin password:
 1. Access http://localhost:8080
 2. Enter password from `jenkins_home/secrets/initialAdminPassword`  
 3. Create admin user account
-4. Skip additional plugin installation (91 plugins pre-installed)
+4. Setup completes automatically (91 plugins pre-installed)
 
 ## Components
 

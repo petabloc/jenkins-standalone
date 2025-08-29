@@ -34,6 +34,7 @@ jenkins_home/secret.key*
 jenkins_home/secrets/
 jenkins_home/userContent/
 jenkins_home/users/
+jenkins_home/.owner
 
 # OS generated files
 .DS_Store

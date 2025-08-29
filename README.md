@@ -1,6 +1,6 @@
 # Jenkins Standalone
 
-Self-contained Jenkins installation with OpenJDK 21, Jenkins 2.516.1 LTS, and 91 plugins. Runs as daemon without root privileges.
+Self-contained Jenkins installation with OpenJDK 21, Jenkins 2.516.1 LTS, and pre-installed plugins. Runs as daemon without root privileges.
 
 ## Quick Start
 
@@ -119,12 +119,14 @@ On first launch, Jenkins displays setup wizard requiring initial admin password:
 
 1. Access http://localhost:8080
 2. Enter password from `jenkins_home/secrets/initialAdminPassword`  
-3. Create admin user account
-4. Setup completes automatically (91 plugins pre-installed)
+3. Click "Select plugins to install"
+4. Click "None" to skip plugin installation (plugins already pre-installed)
+5. Create admin user account
+6. Setup completes
 
 ## Components
 
-- OpenJDK 21.0.1, Jenkins 2.516.1 LTS, 91 plugins
+- OpenJDK 21.0.1, Jenkins 2.516.1 LTS, pre-installed plugins
 - Version management and security scanning scripts  
 - Setup wizard creates admin user on first launch
 

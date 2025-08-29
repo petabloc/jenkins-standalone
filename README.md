@@ -38,6 +38,7 @@ cd jenkins-standalone
 ./bin/jenkins restart  # Restart Jenkins
 ./bin/jenkins status   # Show status
 ./bin/jenkins logs     # Show logs
+./bin/jenkins config   # Display current configuration
 ```
 
 ## Directory Structure
@@ -45,8 +46,10 @@ cd jenkins-standalone
 ```
 jenkins-standalone/
 ├── bin/jenkins          # Control script
-├── lib/                 # OpenJDK and Jenkins WAR
-├── jenkins_home/        # Jenkins data and config
+├── conf/               # Configuration files
+│   └── jenkins.conf    # Main configuration file
+├── lib/                # OpenJDK and Jenkins WAR
+├── jenkins_home/       # Jenkins data and config
 ├── logs/               # Application logs
 ├── scripts/            # Management scripts
 ├── plugins.txt         # Plugin configuration
@@ -55,9 +58,37 @@ jenkins-standalone/
 
 ## Configuration
 
+Jenkins Standalone uses a configuration file to manage all settings. Edit `conf/jenkins.conf` to customize your installation.
+
+### Configuration File
+
+The configuration file `conf/jenkins.conf` contains all customizable settings:
+
+```bash
+# Web Server Configuration
+HTTP_PORT=8080                    # Jenkins web interface port
+
+# Java Virtual Machine Settings  
+JVM_XMS=512m                      # Initial heap size
+JVM_XMX=2g                        # Maximum heap size
+JVM_OPTS="-server -Djava.awt.headless=true"  # Additional JVM flags
+
+# Jenkins Options
+JENKINS_OPTS="--sessionTimeout=0"  # Jenkins command-line arguments
+
+# Network Configuration
+BIND_ADDRESS=0.0.0.0              # Interface to bind (0.0.0.0 for all, 127.0.0.1 for localhost)
+
+# Advanced Settings
+DEVELOPMENT_MODE=false            # Enable development/debug mode
+LOG_LEVEL=INFO                    # Logging level (FINE, INFO, WARNING, SEVERE)
+JENKINS_HOME_OVERRIDE=""          # Custom Jenkins home directory (optional)
+```
+
 ### Default Settings
-- **Port**: 8080
-- **Jenkins Home**: `./jenkins_home`
+- **Port**: 8080 (configurable via `HTTP_PORT`)
+- **Memory**: 512MB initial, 2GB maximum (configurable via `JVM_XMS`/`JVM_XMX`)
+- **Jenkins Home**: `./jenkins_home` (configurable via `JENKINS_HOME_OVERRIDE`)
 - **Security**: Disabled (enable for production)
 
 ### Plugins
@@ -134,7 +165,7 @@ cat logs/jenkins.log          # Check logs
 ```
 
 **Port conflict:**
-Edit `bin/jenkins` to change `--httpPort=8080`
+Edit `conf/jenkins.conf` to change `HTTP_PORT=8080`
 
 **Permissions:**
 ```bash

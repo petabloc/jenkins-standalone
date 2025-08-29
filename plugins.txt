@@ -47,7 +47,6 @@ json-api:latest
 json-path-api:latest
 jsoup:latest
 junit:latest
-ldap:latest
 mailer:latest
 matrix-auth:latest
 matrix-project:latest

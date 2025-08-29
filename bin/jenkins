@@ -34,14 +34,14 @@ case "$1" in
         
         # Start Jenkins in background
         nohup java -jar "$JENKINS_WAR" \
-            --httpPort=8081 \
+            --httpPort=8080 \
             > "$JENKINS_LOG" 2>&1 &
         
         JENKINS_PID_VALUE=$!
         echo $JENKINS_PID_VALUE > "$JENKINS_PID"
         
         echo "Jenkins started with PID: $JENKINS_PID_VALUE"
-        echo "Web interface will be available at: http://localhost:8081"
+        echo "Web interface will be available at: http://localhost:8080"
         echo "Log file: $JENKINS_LOG"
         ;;
         
@@ -84,7 +84,7 @@ case "$1" in
             PID=$(cat "$JENKINS_PID")
             if kill -0 "$PID" 2>/dev/null; then
                 echo "Jenkins is running (PID: $PID)"
-                echo "Web interface: http://localhost:8081"
+                echo "Web interface: http://localhost:8080"
             else
                 echo "Jenkins is not running (stale PID file found)"
                 rm -f "$JENKINS_PID"

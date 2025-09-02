@@ -9,6 +9,9 @@ plugins/
 jenkins.pid
 logs/*.log
 
+# Security reports (generated automatically)
+security-report-*.md
+
 # Jenkins runtime data
 jenkins_home/jobs/
 jenkins_home/workspace/

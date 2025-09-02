@@ -3,9 +3,9 @@
 # and provide a centralized location for version management
 
 metadata:
-  last_updated: "2024-01-15"
+  last_updated: "2025-09-02"
   update_policy: "security-first"  # Options: security-first, latest-stable, manual
-  supported_until: "2024-12-31"
+  supported_until: "2025-12-31"
 
 # Java Development Kit
 jdk:
@@ -183,9 +183,9 @@ security:
   
 # Update channels and sources
 update_sources:
-  jenkins_lts_api: "https://www.jenkins.io/api/lts/"
+  jenkins_lts_api: "https://updates.jenkins.io/stable/latestCore.txt"
   jenkins_security_api: "https://www.jenkins.io/security/advisories/rss.xml"
-  jdk_releases_api: "https://api.github.com/repos/openjdk/jdk/releases"
+  jdk_releases_api: "https://api.github.com/repos/openjdk/jdk21u/releases"
   plugin_updates_api: "https://updates.jenkins.io/update-center.json"
   
 # Build configuration

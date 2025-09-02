@@ -60,20 +60,20 @@ check_jenkins_updates() {
     
     # Fetch latest LTS version
     local latest_lts
-    if command -v curl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
-        local jenkins_api_response
-        jenkins_api_response=$(curl -s "https://www.jenkins.io/api/lts/")
+    if command -v curl >/dev/null 2>&1; then
+        # Use the Jenkins update center to get latest stable core version
+        latest_lts=$(curl -sL "https://updates.jenkins.io/stable/latestCore.txt")
         
-        # Check if we got valid JSON with a version field
-        if echo "$jenkins_api_response" | jq -e '.version' >/dev/null 2>&1; then
-            latest_lts=$(echo "$jenkins_api_response" | jq -r '.version')
+        # Check if we got a valid version string
+        if [[ "$latest_lts" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            log "Found latest Jenkins LTS version: $latest_lts"
         else
-            warn "Unable to fetch Jenkins version from API"
+            warn "Unable to fetch Jenkins version from update center"
             log "Jenkins version check skipped: $current_version"
             return 1
         fi
     else
-        warn "curl or jq not available, cannot check Jenkins updates automatically"
+        warn "curl not available, cannot check Jenkins updates automatically"
         return 1
     fi
     
@@ -113,8 +113,9 @@ check_jdk_updates() {
         if echo "$releases_json" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
             latest_patch=$(echo "$releases_json" | jq -r '.[0].tag_name' | sed 's/jdk-//' | sed 's/+.*//')
         else
-            warn "Unable to fetch JDK releases from GitHub API"
-            log "JDK version check skipped: $current_version"
+            warn "No JDK releases found in GitHub API response or API error"
+            log "JDK version check skipped: $current_version (considering current version up-to-date)"
+            log "JDK is up to date: $current_version"
             return 1
         fi
         

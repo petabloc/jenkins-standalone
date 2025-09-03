@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 # Version Update Automation Script
 # This script checks for updates to Jenkins, JDK, and plugins

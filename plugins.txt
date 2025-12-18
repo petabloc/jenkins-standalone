@@ -1,5 +1,5 @@
 # Jenkins Plugin Configuration
-# Generated from versions.yml on Tue Dec  9 03:21:31 UTC 2025
+# Generated from versions.yml on Thu Dec 18 03:24:06 UTC 2025
 #
 # Core plugins essential for Jenkins functionality
 ant:475.vf34069fef73c

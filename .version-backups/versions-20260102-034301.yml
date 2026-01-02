@@ -3,7 +3,7 @@
 # and provide a centralized location for version management
 
 metadata:
-  last_updated: "2026-01-02"
+  last_updated: "2025-12-09"
   update_policy: "security-first" # Options: security-first, latest-stable, manual
   supported_until: "2025-12-31"
 # Java Development Kit
@@ -17,7 +17,7 @@ jdk:
   eol_date: "2028-09-01"
 # Jenkins Core
 jenkins:
-  version: "2.528.3"
+  version: "2.528.2"
   lts: true
   url_template: "https://get.jenkins.io/war-stable/{version}/jenkins.war"
   security_updates: []
